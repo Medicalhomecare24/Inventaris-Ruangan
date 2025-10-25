@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventaris Ruangan Klinik</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- GLOBAL & VARS --- */
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease-in-out;
+        }
+        :root {
+            --primary: #1d4ed8; 
+            --primary-dark: #1e40af; 
+            --primary-light: #eff6ff; 
+            --secondary-text: #6b7280; 
+            --bg-page: #f9fafb; 
+            --shadow-soft: 0 5px 15px rgba(0, 0, 0, 0.08);
+            --radius: 10px;
+            --sidebar-width: 250px; 
+            --padding-x: 30px; 
+        }
+        body {
+            margin: 0;
+            background-color: var(--bg-page);
+            color: #1f2937;
+            padding-bottom: 0; 
+            min-height: 100vh; 
+        }
+
+        /* --- CONTAINER UTAMA & PENYESUAIAN LAYAR PENUH --- */
+        .container {
+            width: 100%; 
+            margin: 0; 
+            min-height: 100vh; 
+            background: #fff;
+            padding: 40px var(--padding-x);
+            border-radius: 0; 
+            box-shadow: none; 
+
+            /* Sesuaikan padding kiri agar konten tidak tertutup sidebar di desktop */
+            padding-left: calc(var(--padding-x) + var(--sidebar-width) + 20px); 
+        }
+
+        /* Batas untuk layar kecil */
+        @media (max-width: 992px) {
+            .container {
+                padding: 20px; 
+                padding-left: 20px;
+                padding-top: 150px; 
+                border-radius: 0;
+            }
+        }
+        @media (max-width: 768px) {
+            .container { padding: 20px; padding-left: 20px; }
+        }
+
+        h2 { color: var(--primary); font-weight: 700; margin-bottom: 5px; display: flex; align-items: center; }
+        h4 { color: var(--secondary-text); margin-top: 0; margin-bottom: 30px; font-weight: 400; }
+
+        /* --- FORM STYLING --- */
+        form {
+            background: var(--primary-light);
+            border: 1px solid #e0e7ff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Penyesuaian Grid untuk 3 Kolom */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Atur menjadi 3 kolom konsisten */
+            gap: 25px;
+            margin-top: 15px; /* Jarak dari subheader */
+        }
+        
+        /* Subheader untuk memisahkan bagian */
+        .form-subheader {
+            grid-column: 1 / -1; /* Mengisi seluruh lebar (3 kolom) */
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-top: 25px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #c7d2fe;
+            font-size: 1.1em;
+        }
+        
+        /* Item radio group harus mengisi 1 kolom penuh */
+        .radio-item {
+            grid-column: span 1;
+        }
+
+        @media (max-width: 992px) {
+            .form-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Kembali ke adaptif di tablet/mobile */
+            }
+            .form-subheader {
+                 grid-column: span 1; /* Hapus span di mobile */
+                 font-size: 1em;
+            }
+        }
+
+        label { font-weight: 600; color: #374151; display: block; margin-bottom: 6px; font-size: 0.95em; }
+        input[type="text"], input[type="number"], select { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #d1d5db; 
+            border-radius: 8px; 
+            background-color: white; 
+            outline: none; 
+            font-size: 15px; 
+        }
+        .radio-group { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 15px; /* Kurangi sedikit gap agar radio lebih rapi */
+            padding-top: 5px; 
+            line-height: 1.2;
+            align-items: flex-start;
+        }
+
+        button.btn-action {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 25px;
+            box-shadow: 0 4px 10px rgba(29, 78, 216, 0.3);
+        }
+        button.btn-action:hover {
+            background-color: #1e40af;
+            box-shadow: 0 6px 15px rgba(29, 78, 216, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* --- FIXED SIDEBAR (MENU POJOK KIRI ATAS) --- */
+        .fixed-sidebar-nav {
+            /* (CSS sidebar tetap sama) */
+            position: fixed; 
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            width: var(--sidebar-width);
+            height: 100%; 
+            padding-top: 0; 
+            padding-bottom: 20px;
+            background-color: #ffffff; 
+            border-right: 1px solid #e5e7eb;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+        }
+
+        /* --- GRADIENT HEADER --- */
+        .nav-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 1em;
+            padding: 15px 10px 15px 20px; 
+            margin-bottom: 10px;
+            border-bottom: none; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky; 
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 8px 10px;
+            margin: 0 10px 5px 10px; 
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-item.active {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(29, 78, 216, 0.3);
+        }
+
+        .nav-item:hover:not(.active) {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        /* --- MOBILE/TABLET ADJUSTMENTS (Sama seperti sebelumnya) --- */
+        @media (max-width: 992px) {
+            .fixed-sidebar-nav {
+                position: absolute; 
+                width: 100%;
+                height: auto;
+                top: 0;
+                left: 0;
+                padding: 10px;
+                border: none;
+                border-bottom: 1px solid #e5e7eb;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+                display: flex; 
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                background-color: #f9fafb;
+                padding-top: 10px;
+            }
+            .nav-header { 
+                display: none; 
+            }
+            .nav-item {
+                display: inline-block;
+                padding: 6px 12px;
+                margin-right: 8px;
+                flex-shrink: 0;
+                margin: 0 8px 0 0; 
+                border: 1px solid #d1d5db;
+                background-color: white;
+                color: #374151;
+            }
+            .nav-item.active {
+                background-color: var(--primary);
+                color: white;
+            }
+        }
+        
+        /* --- TABLE STYLING (Sama seperti sebelumnya) --- */
+        .table-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .table-controls button { background: none; border: 1px solid #d1d5db; padding: 8px 15px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; color: #374151; }
+        .table-controls .excel-btn { background-color: #10b981; color: white; border-color: #059669; }
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 0; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: var(--radius); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); min-width: 800px; }
+        th, td { padding: 14px 12px; border-bottom: 1px solid #e5e7eb; text-align: center; font-size: 14px; white-space: nowrap; }
+        th { background-color: #e0e7ff; font-weight: 700; color: var(--primary); text-transform: uppercase; font-size: 0.85em; }
+        .aksi-btn { display: flex; justify-content: center; gap: 12px; }
+        .edit-btn, .hapus-btn { background: none; border: none;}
+        .edit-btn { color: #3b82f6; }
+        .hapus-btn { color: #ef4444; }
+
+      /* --- PRINT STYLES (Diperbaiki) --- */
+@media print {
+    /* 1. RESET UMUM */
+    *, *:before, *:after {
+        background: transparent !important; /* Pastikan semua background transparan */
+        color: #000 !important; /* Paksa teks menjadi hitam */
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    /* 2. BODY DAN KONTEN UTAMA */
+    body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    .container, .main-content { /* Asumsi .main-content atau sejenisnya membungkus isi utama */
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-width: 100% !important; /* Gunakan lebar penuh */
+    }
+
+    /* 3. SEMBUNYIKAN ELEMEN YANG TIDAK PERLU */
+    form, 
+    .fixed-sidebar-nav, 
+    .table-controls, 
+    .aksi-btn, 
+    .aksi-kolom,
+    .footer, /* Tambahkan jika ada footer */
+    nav, 
+    button, 
+    a[href]:after, /* Sembunyikan URL link yang dicetak */
+    header, 
+    h4 { /* h4 dipindahkan ke sini */
+        display: none !important;
+    }
+
+    /* 4. JUDUL */
+    h2 { 
+        display: block !important; /* Pastikan judul H2 tetap terlihat */
+        margin: 20px 0 15px 0 !important;
+        padding: 0 !important;
+        color: #000 !important; 
+        font-size: 18pt !important;
+    }
+
+    /* 5. TABEL DAN RESPONSIVITAS */
+    .table-responsive { 
+        overflow-x: visible !important; /* Izinkan tabel tampil penuh */
+        width: 100% !important;
+    }
+    
+    table { 
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border: 1px solid #666 !important; /* Border yang sedikit lebih tegas */
+        margin: 15px 0 !important;
+    }
+    
+    th, td { 
+        border: 1px solid #666 !important;
+        padding: 8px !important; 
+        font-size: 11pt !important; /* Ukuran font yang lebih baik untuk cetak */
+        vertical-align: top !important;
+    }
+    
+    /* 6. STYLE WARNA LATAR BELAKANG UNTUK TABEL */
+    th { 
+        background-color: #e8e8e8 !important; 
+        color: #000 !important; 
+        /* Penting: Perintah di bawah ini memaksa browser mencetak warna latar belakang */
+        -webkit-print-color-adjust: exact !important; 
+        print-color-adjust: exact !important;
+    }
+    
+    /* Warna selang-seling */
+    tbody tr:nth-child(even) { 
+        background-color: #f5f5f5 !important; 
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    /* 7. REVISI SPAN DALAM TD */
+    td span { 
+        /* Mengasumsikan td span adalah badge atau label, kita pastikan warnanya normal */
+        background: none !important; 
+        color: #000 !important; 
+        font-weight: normal !important;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <div class="fixed-sidebar-nav" id="navRuangan">
+        <div class="nav-header"><i class="fas fa-filter"></i> Filter Ruangan</div>
+        </div>
+
+
+    <div class="container">
+        <h2><i class="fas fa-warehouse" style="margin-right: 10px; color: #2563eb;"></i> Manajemen Inventaris Ruangan</h2>
+        <h4>Klinik ‘Aisyiyah Singkawang | Pencatatan Aset</h4>
+
+        <form id="formBarang">
+            <input type="hidden" id="editIndex" value="-1">
+            
+            <div class="form-grid">
+                
+                <div class="form-subheader"><i class="fas fa-box"></i> Detail Barang & Penempatan</div>
+                
+                <div>
+                    <label>Nama Barang*</label>
+                    <input type="text" id="nama" required placeholder="Contoh: Tensimeter Digital">
+                </div>
+                <div>
+                    <label>Merek/Model</label>
+                    <input type="text" id="merek" placeholder="Contoh: Omron M7">
+                </div>
+                <div>
+                    <label>Kode Barang*</label>
+                    <input type="text" id="kode" required placeholder="Contoh: KD-UGD-001">
+                </div>
+
+                <div class="radio-item">
+                    <label>Jenis Barang*</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="jenis" value="Medis" required> Medis</label>
+                        <label><input type="radio" name="jenis" value="Non Medis"> Non Medis</label>
+                    </div>
+                </div>
+                <div>
+                    <label>Ruangan*</label>
+                    <select id="ruangan" required></select>
+                </div>
+                <div>
+                    <label>Jumlah*</label>
+                    <input type="number" id="jumlah" required min="1" placeholder="Masukkan angka">
+                </div>
+
+                <div class="form-subheader"><i class="fas fa-file-invoice"></i> Pembelian & Kondisi</div>
+
+                <div>
+                    <label>Harga Beli Satuan*</label>
+                    <input type="number" id="harga" required min="0" placeholder="Rp">
+                </div>
+                <div>
+                    <label>Tahun Pembelian*</label>
+                    <input type="number" id="tahun_beli" required min="1900" max="2100" placeholder="Contoh: 2023">
+                </div>
+                <div>
+                    <label>Tahun Kalibrasi</label>
+                    <input type="number" id="tahun_kalibrasi" min="1900" max="2100" placeholder="Kosongkan jika non-medis">
+                </div>
+
+                <div class="radio-item">
+                    <label>Keadaan*</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="keadaan" value="Bagus" required> Bagus</label>
+                        <label><input type="radio" name="keadaan" value="Rusak Ringan"> Rusak Ringan</label>
+                        <label><input type="radio" name="keadaan" value="Rusak Berat"> Rusak Berat</label>
+                    </div>
+                </div>
+                
+                <div></div>
+                <div></div> 
+            </div>
+            
+            <button type="submit" id="btnSimpan" class="btn-action">
+                <span id="simpanIcon"><i class="fas fa-save" style="margin-right: 5px;"></i></span> 
+                <span id="simpanText">Simpan Data</span>
+            </button>
+        </form>
+        
+        <div>
+            <div class="table-controls">
+                <button onclick="window.print()"><i class="fas fa-print"></i> Cetak Tabel</button>
+                <button class="excel-btn" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Export Excel</button>
+            </div>
+
+            <div class="table-responsive"> 
+                <table id="tabelBarang">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Nama Barang</th>
+                            <th>Kode</th>
+                            <th>Ruangan</th>
+                            <th>Jenis</th>
+                            <th>Beli</th>
+                            <th>Kalibrasi</th>
+                            <th>Jumlah</th>
+                            <th>Harga</th>
+                            <th>Keadaan</th>
+                            <th class="aksi-kolom">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div> 
+    
+    <script>
+    const form = document.getElementById("formBarang");
+    const tabel = document.querySelector("#tabelBarang tbody");
+    const ruanganSelect = document.getElementById("ruangan");
+    const btnSimpan = document.getElementById("btnSimpan");
+    const simpanIcon = document.getElementById("simpanIcon");
+    const simpanText = document.getElementById("simpanText");
+    const navRuangan = document.getElementById("navRuangan");
+    const tabelBarang = document.getElementById("tabelBarang");
+    const editIndexInput = document.getElementById("editIndex");
+    const inputHarga = document.getElementById("harga");
+
+    const defaultRuang = [
+        "Semua", "Poli Umum", "Poli Gigi", "Administrasi",
+        "Poli KIA & KB", "UGD & Tindakan", "Farmasi",
+        "Laboratorium", "Nifas", "Tindakan KIA & KB" 
+    ];
+
+    let daftarRuangan = JSON.parse(localStorage.getItem("daftarRuangan")) || defaultRuang;
+    if (daftarRuangan.length < defaultRuang.length) {
+        daftarRuangan = defaultRuang;
+        localStorage.setItem("daftarRuangan", JSON.stringify(daftarRuangan));
+    }
+
+    let dataBarang = JSON.parse(localStorage.getItem("inventaris")) || [];
+    let filterAktif = "Semua";
+
+    // Fungsi awal
+    renderRuanganDropdown();
+    renderNavRuangan();
+    renderTabel();
+
+    // --------------------------------------------------
+    // === FORMAT INPUT HARGA OTOMATIS (SUPPORT JUTAAN) ===
+    // --------------------------------------------------
+    inputHarga.setAttribute("type", "text");
+    inputHarga.setAttribute("inputmode", "numeric");
+    inputHarga.placeholder = "Contoh: 1.500.000";
+
+    inputHarga.addEventListener("input", (e) => {
+        let value = e.target.value.replace(/\D/g, ""); // hanya angka
+        if (value) {
+            if (value.length > 12) value = value.substring(0, 12); // batasi 12 digit
+            e.target.value = new Intl.NumberFormat("id-ID").format(value);
+        } else {
+            e.target.value = "";
+        }
+    });
+
+    function getHargaNumber() {
+        return inputHarga.value.replace(/\./g, "").replace(/,/g, "");
+    }
+
+    // --------------------------------------------------
+    // === FUNGSI RUANGAN & NAVIGASI ===
+    // --------------------------------------------------
+
+    function renderRuanganDropdown() {
+        ruanganSelect.innerHTML = "";
+        daftarRuangan
+            .filter(r => r !== "Semua")
+            .forEach(r => {
+                const opt = document.createElement("option");
+                opt.value = r;
+                opt.textContent = r;
+                ruanganSelect.appendChild(opt);
+            });
+        const tambahOpt = document.createElement("option");
+        tambahOpt.value = "tambah";
+        tambahOpt.textContent = "➕ Tambah Ruangan Baru";
+        ruanganSelect.appendChild(tambahOpt);
+    }
+
+    ruanganSelect.addEventListener("change", () => {
+        if (ruanganSelect.value === "tambah") {
+            const namaBaru = prompt("Masukkan nama ruangan baru:");
+            if (namaBaru && namaBaru.trim() !== "" && !daftarRuangan.includes(namaBaru.trim())) {
+                daftarRuangan.push(namaBaru.trim());
+                localStorage.setItem("daftarRuangan", JSON.stringify(daftarRuangan));
+                renderRuanganDropdown();
+                renderNavRuangan();
+                ruanganSelect.value = namaBaru.trim();
+            } else {
+                alert("Nama ruangan tidak valid atau sudah ada!");
+                ruanganSelect.selectedIndex = 0;
+            }
+        }
+    });
+
+    function renderNavRuangan() {
+        const navItemsContainer = navRuangan; 
+        const header = navItemsContainer.querySelector('.nav-header');
+        Array.from(navItemsContainer.children).forEach(child => {
+            if (child !== header) {
+                child.remove();
+            }
+        });
+
+        daftarRuangan.forEach(r => {
+            const btn = document.createElement("div");
+            btn.className = "nav-item" + (r === filterAktif ? " active" : "");
+            btn.textContent = r;
+            btn.onclick = () => {
+                filterAktif = r;
+                document.querySelectorAll("#navRuangan .nav-item").forEach(el => el.classList.remove("active"));
+                btn.classList.add("active");
+                renderTabel();
+                form.reset();
+                editIndexInput.value = -1;
+                simpanIcon.innerHTML = '<i class="fas fa-save" style="margin-right: 5px;"></i>';
+                simpanText.textContent = 'Simpan Data';
+            };
+            navItemsContainer.appendChild(btn);
+        });
+    }
+
+    // --------------------------------------------------
+    // === FUNGSI SIMPAN & EDIT ===
+    // --------------------------------------------------
+
+    form.addEventListener("submit", e => {
+        e.preventDefault();
+        const indexEdit = editIndexInput.value; 
+        const selectedJenis = document.querySelector("input[name='jenis']:checked");
+        const selectedKeadaan = document.querySelector("input[name='keadaan']:checked");
+
+        const barang = {
+            nama: document.getElementById("nama").value,
+            merek: document.getElementById("merek").value,
+            kode: document.getElementById("kode").value,
+            ruangan: ruanganSelect.value,
+            jenis: selectedJenis ? selectedJenis.value : '',
+            jumlah: document.getElementById("jumlah").value,
+            harga: getHargaNumber(),
+            tahun_beli: document.getElementById("tahun_beli").value,
+            tahun_kalibrasi: document.getElementById("tahun_kalibrasi").value,
+            keadaan: selectedKeadaan ? selectedKeadaan.value : '',
+        };
+
+        if (indexEdit == -1) {
+            dataBarang.push(barang);
+        } else {
+            const barangFilter = dataBarang.filter(b => b.ruangan === filterAktif);
+            const barangLama = barangFilter[indexEdit];
+            const indexAsli = dataBarang.findIndex(b => b === barangLama);
+            if (indexAsli !== -1) {
+                dataBarang[indexAsli] = barang;
+            }
+        }
+
+        localStorage.setItem("inventaris", JSON.stringify(dataBarang));
+        form.reset();
+        editIndexInput.value = -1;
+        simpanIcon.innerHTML = '<i class="fas fa-save" style="margin-right: 5px;"></i>';
+        simpanText.textContent = 'Simpan Data';
+        renderTabel();
+    });
+
+    // --------------------------------------------------
+    // === FUNGSI TABEL & AKSI ===
+    // --------------------------------------------------
+
+    function renderTabel() {
+        tabel.innerHTML = "";
+        const dataFilter = filterAktif === "Semua"
+            ? dataBarang
+            : dataBarang.filter(b => b.ruangan === filterAktif);
+
+        dataFilter.forEach((b, i) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${i + 1}</td>
+                <td style="text-align: left; font-weight: 600;">${b.nama}</td>
+                <td>${b.kode}</td>
+                <td>${b.ruangan}</td>
+                <td>
+                    <span style="padding: 3px 8px; border-radius: 4px; font-size: 0.85em; font-weight: 600; 
+                        background-color: ${b.jenis === 'Medis' ? '#d1e7ff' : '#d2f3d2'};
+                        color: ${b.jenis === 'Medis' ? '#1d4ed8' : '#047857'};">
+                        ${b.jenis}
+                    </span>
+                </td>
+                <td>${b.tahun_beli}</td>
+                <td>${b.tahun_kalibrasi || '-'}</td>
+                <td>${b.jumlah}</td>
+                <td>Rp ${parseInt(b.harga).toLocaleString("id-ID")}</td>
+                <td>${b.keadaan}</td>
+                <td class="aksi-btn aksi-kolom">
+                    <button class="edit-btn" onclick="editBarang(${i})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="hapus-btn" onclick="hapusBarang(${i})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            tabel.appendChild(row);
+        });
+    }
+
+    window.hapusBarang = function(index) {
+        if (confirm("Hapus data ini?")) {
+            const barangFilter = dataBarang.filter(b => b.ruangan === filterAktif);
+            const barangLama = barangFilter[index];
+            const indexAsli = dataBarang.findIndex(b => b === barangLama);
+            if (indexAsli !== -1) {
+                dataBarang.splice(indexAsli, 1);
+                localStorage.setItem("inventaris", JSON.stringify(dataBarang));
+                renderTabel();
+                form.reset();
+                editIndexInput.value = -1;
+                simpanIcon.innerHTML = '<i class="fas fa-save" style="margin-right: 5px;"></i>';
+                simpanText.textContent = 'Simpan Data';
+            }
+        }
+    };
+
+    window.editBarang = function(index) {
+        const barangFilter = dataBarang.filter(b => b.ruangan === filterAktif);
+        const b = barangFilter[index];
+        document.getElementById("nama").value = b.nama;
+        document.getElementById("merek").value = b.merek;
+        document.getElementById("kode").value = b.kode;
+        document.getElementById("jumlah").value = b.jumlah;
+        document.getElementById("harga").value = new Intl.NumberFormat("id-ID").format(b.harga);
+        document.getElementById("tahun_beli").value = b.tahun_beli || '';
+        document.getElementById("tahun_kalibrasi").value = b.tahun_kalibrasi || '';
+        ruanganSelect.value = b.ruangan;
+        document.querySelector(`input[name="jenis"][value="${b.jenis}"]`).checked = true;
+        document.querySelector(`input[name="keadaan"][value="${b.keadaan}"]`).checked = true;
+        editIndexInput.value = index;
+        simpanIcon.innerHTML = '<i class="fas fa-sync-alt" style="margin-right: 5px;"></i>';
+        simpanText.textContent = 'Update Data';
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    // --------------------------------------------------
+    // === FUNGSI EKSPORT KE EXCEL ===
+    // --------------------------------------------------
+    window.exportToExcel = function() {
+        const tableClone = tabelBarang.cloneNode(true);
+        const rows = tableClone.rows;
+        for (let i = 0; i < rows.length; i++) {
+            rows[i].deleteCell(10);
+            if (i > 0) {
+                const jenisCell = rows[i].cells[4]; 
+                jenisCell.innerHTML = jenisCell.querySelector('span').textContent;
+            }
+        }
+        
+        let html = tableClone.outerHTML;
+        const dataUri = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+        const exportLink = document.createElement('a');
+        const currentDate = new Date().toISOString().slice(0, 10);
+        exportLink.download = `Inventaris_${filterAktif}_${currentDate}.xls`;
+        exportLink.href = dataUri;
+        document.body.appendChild(exportLink);
+        exportLink.click();
+        document.body.removeChild(exportLink);
+        alert("Data berhasil diexport ke Excel (.xls)!");
+    };
+</script>
+
+</body>
+</html>
